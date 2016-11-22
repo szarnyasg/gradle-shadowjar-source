@@ -1,0 +1,14 @@
+plugins { id "com.github.johnrengelman.shadow" version "1.2.4" }
+
+apply plugin: 'java'
+
+shadowJar {
+	classifier = 'fat'
+	manifest { attributes 'Main-Class': 'org.example.MyMain' }
+}
+
+task packageSources(type: Jar) {
+	from sourceSets.main.allSource
+}
+
+artifacts.archives packageSources
