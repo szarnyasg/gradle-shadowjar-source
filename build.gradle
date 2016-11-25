@@ -1,14 +1,35 @@
-plugins { id "com.github.johnrengelman.shadow" version "1.2.4" }
-
 apply plugin: 'java'
 
-shadowJar {
-	classifier = 'fat'
-	manifest { attributes 'Main-Class': 'org.example.MyMain' }
+repositories {
+    jcenter()
 }
 
-task packageSources(type: Jar) {
-	from sourceSets.main.allSource
+version = "0.1"
+group = "com.jbirdvegas.so"
+
+dependencies {
+    // some dependencies to show the use case
+    compile 'org.slf4j:slf4j-api:1.7.21', 'org.slf4j:slf4j-simple:1.7.21'
+    testCompile 'junit:junit:4.12'
 }
 
-artifacts.archives packageSources
+jar {
+    // set manifest
+    manifest.attributes 'Implementation-Title': 'Executable fat jar',
+            'Implementation-Version': version,
+            'Main-Class': 'org.example.MyMain'
+}
+
+task fatJar(type: Jar) {
+    // baseName must be unique or it clashes with the default jar task output
+    baseName = "$project.name-fat"
+    // make sure you have a valid manifest
+    manifest = jar.manifest
+    // Here put the source output (class) files in the jar
+    // as well as dependencies (jar) files.
+    from sourceSets.main.output,
+            configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+}
+
+// make sure our fatJar always runs immediately after the jar task
+jar.finalizedBy fatJar
